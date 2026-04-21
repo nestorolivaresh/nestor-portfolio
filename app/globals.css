@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #080c18;
+  --bg2: #0d1222;
+  --bg3: #121828;
+  --bg4: #1a2236;
+  --fg: #eef0f8;
+  --muted: #6b7a96;
+  --border: rgba(255, 255, 255, 0.07);
+  --accent: oklch(83% 0.22 128);
+  --accent2: oklch(74% 0.22 128);
+  --acdim: oklch(83% 0.22 128 / 0.13);
+  --acglow: oklch(83% 0.22 128 / 0.4);
+  --actext: #000;
+  --court: #2d6e3e;
+  --court-dark: #235830;
+  --court-line: rgba(255, 255, 255, 0.9);
+  --court-net: rgba(255, 255, 255, 0.7);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background 0.4s, color 0.4s;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+/* ─── Tennis ball fly-across animation ─────────────────────────────── */
+/* Two-element technique: track = constant horizontal speed (linear)    */
+/*                        ball  = vertical gravity + squash on impact   */
+
+/* Horizontal: constant speed across the viewport */
+@keyframes ballTrack {
+  from { transform: translateX(-40px); }
+  to   { transform: translateX(calc(100vw + 40px)); }
+}
+
+/* Vertical + rotation: real gravity — ease-in falling, ease-out rising */
+/* animation-timing-function inside a keyframe applies to the NEXT segment */
+@keyframes ballBounce {
+  /* Start mid-air, ball falling */
+  0%   { animation-timing-function: cubic-bezier(.55,0,1,.5);
+         transform: translateY(10vh) rotate(0deg); }
+  /* 1st impact — squash hard */
+  15%  { animation-timing-function: cubic-bezier(0,.5,.4,1);
+         transform: translateY(76vh) rotate(230deg) scaleX(1.45) scaleY(0.62); }
+  /* 1st peak */
+  28%  { animation-timing-function: cubic-bezier(.55,0,1,.5);
+         transform: translateY(22vh) rotate(450deg) scaleX(1) scaleY(1); }
+  /* 2nd impact */
+  40%  { animation-timing-function: cubic-bezier(0,.5,.4,1);
+         transform: translateY(76vh) rotate(630deg) scaleX(1.35) scaleY(0.68); }
+  /* 2nd peak — lower, losing energy */
+  52%  { animation-timing-function: cubic-bezier(.55,0,1,.5);
+         transform: translateY(38vh) rotate(800deg) scaleX(1) scaleY(1); }
+  /* 3rd impact */
+  63%  { animation-timing-function: cubic-bezier(0,.5,.4,1);
+         transform: translateY(76vh) rotate(960deg) scaleX(1.28) scaleY(0.74); }
+  /* 3rd peak — lower still */
+  73%  { animation-timing-function: cubic-bezier(.55,0,1,.5);
+         transform: translateY(52vh) rotate(1100deg) scaleX(1) scaleY(1); }
+  /* 4th impact — short hop */
+  82%  { animation-timing-function: cubic-bezier(0,.5,.4,1);
+         transform: translateY(76vh) rotate(1220deg) scaleX(1.2) scaleY(0.8); }
+  /* 4th peak — tiny bounce */
+  89%  { animation-timing-function: cubic-bezier(.55,0,1,.5);
+         transform: translateY(64vh) rotate(1330deg) scaleX(1) scaleY(1); }
+  /* final — rolls off screen low */
+  100% { transform: translateY(76vh) rotate(1500deg); }
+}
+
+.tennis-ball-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  pointer-events: none;
+  will-change: transform;
+  animation: ballTrack 2.6s linear 0.3s 1 both;
+}
+
+.tennis-ball {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e8ff4a, #b8dd0c 55%, #7a9500 90%);
+  box-shadow: 0 0 18px rgba(232,255,74,0.55), inset -2px -3px 5px rgba(0,0,0,0.2);
+  will-change: transform;
+  animation: ballBounce 2.6s linear 0.3s 1 both;
+}
+.tennis-ball::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 55%, rgba(255,255,255,0.35) 57%, transparent 62%);
+  transform: rotate(35deg);
+}
+
+/* ─── Serve-motion name entrance ───────────────────────────────────── */
+@keyframes serveMotion {
+  0%   { opacity: 0; transform: translateY(-60px) rotate(-8deg) scale(1.05); }
+  40%  { opacity: 0.5; transform: translateY(15px) rotate(2deg) scale(0.98); }
+  70%  { transform: translateY(-4px) rotate(-0.5deg) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+.serve-line {
+  display: inline;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+/* ─── Responsive layout utilities ─────────────────────────────────── */
+
+.section-py    { padding-top: 88px; padding-bottom: 88px; }
+.section-inner { max-width: 1280px; margin: 0 auto; padding-left: 48px; padding-right: 48px; width: 100%; }
+
+.hero-grid         { display: grid; grid-template-columns: 300px 1fr; gap: 64px; align-items: center; margin-bottom: -25px; }
+.hero-h1           { font-family: var(--font-bebas), sans-serif; font-size: 62px; line-height: 1; letter-spacing: 0.02em; color: var(--fg); }
+.stats-grid        { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+.expertise-grid    { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.court-overlay-wrap { display: block; }
+
+.career-grid       { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+.career-list       { display: flex; flex-direction: column; gap: 6px; }
+
+.skills-grid       { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 60px; }
+.skills-tabs       { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 1px solid var(--border);  }
+.skills-tabs::-webkit-scrollbar { height: 0; }
+
+.timeline-date     { width: 108px; padding-right: 20px; text-align: right; flex-shrink: 0; padding-top: 3px; }
+.timeline-line     { position: absolute; left: 119px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+
+.contact-grid      { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+
+.nav-links         { display: flex; gap: 4px; }
+.nav-hire          { display: inline-flex; }
+.nav-subtitle      { display: inline; }
+.nav-hamburger     { display: none; align-items: center; justify-content: center; }
+.mobile-menu       { display: none; }
+.mobile-menu.open  { display: flex; }
+
+.footer-inner      { display: flex; justify-content: space-between; align-items: center; }
+
+@media (max-width: 1024px) {
+  .section-inner   { padding-left: 32px; padding-right: 32px; }
+  .hero-grid       { grid-template-columns: 1fr; gap: 32px; }
+  .hero-left       { order: 2; }
+  .hero-right      { order: 1; }
+  .hero-photo      { max-height: 300px; }
+  .career-grid     { grid-template-columns: 1fr; }
+  .contact-grid    { grid-template-columns: 1fr; }
+  .hero-h1         { font-size: 56px; }
+  .stats-grid      { grid-template-columns: repeat(4, 1fr); }
+  .nav-subtitle    { display: none; }
+}
+
+@media (max-width: 768px) {
+  nav                  { padding: 0 24px !important; }
+  .nav-links           { display: none; }
+  .nav-hire            { display: none; }
+  .nav-hamburger       { display: flex; }
+  .court-overlay-wrap  { display: none; }
+  .hero-h1             { font-size: 48px; }
+  .hero-photo          { max-height: 280px; }
+}
+
+@media (max-width: 640px) {
+  nav              { padding: 0 20px !important; }
+  .section-py      { padding-top: 56px; padding-bottom: 56px; }
+  .section-inner   { padding-left: 20px; padding-right: 20px; }
+
+  .hero-grid       { gap: 24px; }
+  .hero-h1         { font-size: 40px; }
+  .hero-photo      { max-height: 260px; }
+  .stats-grid      { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .expertise-grid  { grid-template-columns: repeat(3, 1fr); }
+
+  .skills-grid     { grid-template-columns: 1fr; }
+
+  .career-list     { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; }
+  .career-list::-webkit-scrollbar { height: 0; }
+
+  .timeline-date   { width: 72px; padding-right: 12px; }
+  .timeline-line   { left: 83px; }
+
+  .footer-inner    { flex-direction: column; gap: 8px; text-align: center; }
+}
+
+@media (max-width: 400px) {
+  .hero-h1         { font-size: 32px; }
+  .section-inner   { padding-left: 16px; padding-right: 16px; }
+}
+
+@media (max-width: 768px) {
+  .fp-dots    { display: none !important; }
+  .fp-counter { display: none !important; }
+}
