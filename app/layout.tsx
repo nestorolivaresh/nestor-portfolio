@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
-import { Bebas_Neue, Barlow_Condensed, Inter } from 'next/font/google'
+import { Bebas_Neue, Cormorant_Garamond, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
-import { CourtThemeProvider } from '@/components/CourtThemeProvider'
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -10,24 +9,25 @@ const bebasNeue = Bebas_Neue({
   display: 'swap',
 })
 
-const barlowCondensed = Barlow_Condensed({
-  weight: ['400', '600', '700', '800'],
+const cormorant = Cormorant_Garamond({
+  weight: ['400', '600', '700'],
+  style: ['normal', 'italic'],
   subsets: ['latin'],
-  variable: '--font-barlow',
+  variable: '--font-cormorant',
   display: 'swap',
 })
 
-const inter = Inter({
-  weight: ['300', '400', '500', '600'],
+const jetbrains = JetBrains_Mono({
+  weight: ['400', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-jetbrains',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Néstor Olivares Heredia — Full Stack Engineer',
+  title: 'Nestor Olivares · Passport Portfolio',
   description:
-    'Full Stack Engineer · 6+ years shipping production apps in React, Next.js, TypeScript, and Web3.',
+    'Full-Stack Engineer · 6+ years across React, Next.js, TypeScript, and Web3. A passport-themed portfolio.',
 }
 
 export default function RootLayout({
@@ -36,10 +36,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${barlowCondensed.variable} ${inter.variable}`}>
-      <body>
-        <CourtThemeProvider>{children}</CourtThemeProvider>
-      </body>
+    <html lang="en" className={`${bebasNeue.variable} ${cormorant.variable} ${jetbrains.variable}`}>
+      <body>{children}</body>
     </html>
   )
 }
