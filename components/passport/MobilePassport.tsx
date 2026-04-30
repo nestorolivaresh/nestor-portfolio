@@ -257,10 +257,6 @@ export function MobilePassport({
         })}
       </div>
 
-      {page === 0 && (
-        <div className="m-swipe-hint">SWIPE OR TAP TO TURN THE PAGE</div>
-      )}
-
       {page > 0 && (
         <div className="m-nav">
           <button className="m-nav-arrow" onClick={prev} disabled={page <= 0} aria-label="Previous">

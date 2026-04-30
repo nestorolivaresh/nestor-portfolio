@@ -34,3 +34,8 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code worktrees (auto-created isolated agent checkouts; each one is
+# a git worktree whose .git pointer makes `git add .` treat it as an
+# embedded repo). Safe to ignore — they live entirely inside .git/worktrees.
+.claude/worktrees/
