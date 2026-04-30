@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Bebas_Neue, Cormorant_Garamond, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -24,10 +24,78 @@ const jetbrains = JetBrains_Mono({
   display: 'swap',
 })
 
+const SITE_URL = 'https://nestorolivaresh.vercel.app'
+const NAME = 'Nestor Olivares Heredia'
+const TITLE = `${NAME} · Passport Portfolio`
+const DESCRIPTION = 'Software Engineer'
+
 export const metadata: Metadata = {
-  title: 'Nestor Olivares · Passport Portfolio',
-  description:
-    'Full-Stack Engineer · 6+ years across React, Next.js, TypeScript, and Web3. A passport-themed portfolio.',
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  applicationName: `${NAME} · Portfolio`,
+  authors: [{ name: NAME, url: SITE_URL }],
+  creator: NAME,
+  keywords: [
+    NAME,
+    'Nestor Olivares',
+    'Software Engineer',
+    'React',
+    'Next.js',
+    'TypeScript',
+    'Web3',
+    'Portfolio',
+  ],
+  // Anchors Next's auto-injected `<link rel="icon">` to the SVG seal at
+  // app/icon.svg. The .png is provided as a raster fallback for clients that
+  // don't render SVG favicons (older Safari, some mail clients).
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/assets/nestor.png', type: 'image/png' },
+    ],
+    shortcut: '/icon.svg',
+    apple: '/assets/nestor.png',
+  },
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    siteName: `${NAME} · Portfolio`,
+    title: TITLE,
+    description: DESCRIPTION,
+    locale: 'en_US',
+    images: [
+      {
+        url: '/assets/nestor.png',
+        alt: `${NAME} — Passport Portfolio`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/assets/nestor.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  category: 'technology',
+}
+
+// Without this, mobile Safari renders pages at its default ~980px logical
+// width and our (max-width: 768px) media query never matches on first paint,
+// so phones briefly load the desktop layout before JS catches up. The
+// themeColor pairs with the navy passport so iOS/Android paint the browser
+// chrome to match instead of the OS default white/grey.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0d1f3c',
+  colorScheme: 'dark',
 }
 
 export default function RootLayout({

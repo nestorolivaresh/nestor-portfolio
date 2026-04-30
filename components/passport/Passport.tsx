@@ -8,11 +8,13 @@ import { Modal } from './Modal'
 
 const MOBILE_QUERY = '(max-width: 768px)'
 
-// True once the viewport is known to be mobile-sized. Returns false on the
-// server and on the very first client render to avoid hydration mismatches —
-// desktop layout paints first and we swap to mobile on mount if needed.
+// `null` while the viewport is still unknown (server render + first client
+// render before mount). We render nothing in that window so phones never
+// flash the desktop layout — previously isMobile defaulted to false and the
+// desktop deck painted for one frame, which on mobile Safari overflowed the
+// viewport and looked broken.
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
   useEffect(() => {
     const mql = window.matchMedia(MOBILE_QUERY)
     const update = () => setIsMobile(mql.matches)
@@ -29,14 +31,17 @@ function useIsMobile() {
 export default function Passport() {
   const isMobile = useIsMobile()
   const [exp, setExp] = useState<Experience | null>(null)
+  if (isMobile === null) return null
+  // Wrapper exists purely to host the entrance animation — content fades and
+  // settles in once we know which layout to show, instead of snapping in.
   return (
-    <>
+    <div className="passport-enter">
       {isMobile ? (
         <MobilePassport setExp={setExp} modalOpen={exp != null} />
       ) : (
         <DesktopPassport setExp={setExp} modalOpen={exp != null} />
       )}
       <Modal exp={exp} onClose={() => setExp(null)} />
-    </>
+    </div>
   )
 }

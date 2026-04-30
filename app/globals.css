@@ -53,6 +53,25 @@ body::before {
   padding-bottom: 50px;
 }
 
+/* Entrance animation for the layout-aware wrapper. The wrapper only mounts
+   once we know whether to render desktop or mobile, so this fade+settle
+   plays exactly once on first appearance — no jarring snap-in. The wrapper
+   is `display: contents` so it doesn't create its own layout box and the
+   children keep their existing positioning context. */
+.passport-enter {
+  display: contents;
+}
+.passport-enter > * {
+  animation: passport-enter 700ms cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes passport-enter {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.985); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0)   scale(1);     filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .passport-enter > * { animation: none; }
+}
+
 /* ============== STAGE / BOOK ============== */
 .stage {
   position: relative;
@@ -365,7 +384,13 @@ body::before {
    to the left while the next page is uncovered underneath. */
 .m-page-past   { transform: rotateY(-180deg); pointer-events: none; }
 .m-page-future { transform: rotateY(0deg); pointer-events: none; }
-.m-cover.m-page-active {
+/* Navy leather + shadow live on .m-cover (not .m-cover.m-page-active) so the
+   styling persists through the open-flip. Otherwise the cover loses its
+   background the instant React swaps it from active → past, and the first
+   half of the rotation reveals a cream/paper card with gold inlay (visible
+   on iOS Safari, where the transition is most noticeable). */
+.m-cover {
+  cursor: pointer;
   background:
     radial-gradient(ellipse at 50% 40%, #2a4778 0%, #1a2e54 35%, #0d1f3c 75%, #07142a 100%);
   box-shadow:
@@ -373,7 +398,6 @@ body::before {
     0 10px 20px rgba(0, 0, 0, 0.4),
     inset 0 0 80px rgba(7, 14, 30, 0.6);
 }
-.m-cover { cursor: pointer; }
 /* Soft hint shown only on the cover so first-time mobile visitors know
    the gesture vocabulary. */
 .m-swipe-hint {

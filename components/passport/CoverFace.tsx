@@ -42,7 +42,7 @@ export function CoverFace({ openPrompt = '▸ CLICK TO OPEN ◂' }: { openPrompt
       >
         <div style={{ textAlign: 'center', marginTop: 14 }}>
           <div style={{ fontFamily: FONT_BEBAS, fontSize: 11, letterSpacing: '0.5em', color: 'var(--gold)' }}>
-            DEVELOPER OF THE
+            CITIZEN OF THE
           </div>
           <div
             style={{
@@ -143,8 +143,8 @@ export function CoverFace({ openPrompt = '▸ CLICK TO OPEN ◂' }: { openPrompt
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: 6 }}>
-          <div style={{ fontFamily: FONT_BEBAS, fontSize: 20, letterSpacing: '0.3em', color: 'var(--gold)' }}>
-            NESTOR&nbsp;OLIVARES&nbsp;H
+          <div style={{ fontFamily: FONT_BEBAS, fontSize: 18, letterSpacing: '0.26em', color: 'var(--gold)', whiteSpace: 'nowrap' }}>
+            NESTOR&nbsp;OLIVARES&nbsp;HEREDIA
           </div>
           <div
             style={{
@@ -155,7 +155,7 @@ export function CoverFace({ openPrompt = '▸ CLICK TO OPEN ◂' }: { openPrompt
               color: 'rgba(200,168,104,0.7)',
             }}
           >
-            FULL · STACK · ENGINEER
+            SOFTWARE ENGINEER
           </div>
           <div
             className="pulse"
