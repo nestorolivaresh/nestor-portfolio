@@ -26,7 +26,7 @@ const jetbrains = JetBrains_Mono({
 
 const SITE_URL = 'https://nestorolivaresh.vercel.app'
 const NAME = 'Nestor Olivares Heredia'
-const TITLE = `${NAME} · Passport Portfolio`
+const TITLE = `${NAME}`
 const DESCRIPTION = 'Software Engineer'
 
 export const metadata: Metadata = {
