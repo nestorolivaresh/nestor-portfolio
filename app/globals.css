@@ -53,23 +53,26 @@ body::before {
   padding-bottom: 50px;
 }
 
-/* Entrance animation for the layout-aware wrapper. The wrapper only mounts
-   once we know whether to render desktop or mobile, so this fade+settle
-   plays exactly once on first appearance — no jarring snap-in. The wrapper
-   is `display: contents` so it doesn't create its own layout box and the
-   children keep their existing positioning context. */
-.passport-enter {
-  display: contents;
+/* Entrance fade. The veil is a fixed full-screen overlay matching the body
+   background; it starts opaque and fades out to reveal the deck. The deck
+   itself never animates — animating opacity on an ancestor of the deck
+   would promote the children onto a GPU compositing layer, and at the
+   non-integer scale used on phones (e.g. ~0.798 at 375px width) the
+   rasterized texture would resample and look permanently blurry. */
+.entrance-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, #2a2418 0%, #14100a 70%, #080603 100%);
+  animation: entrance-veil 600ms ease-out forwards;
 }
-.passport-enter > * {
-  animation: passport-enter 700ms cubic-bezier(.2, .7, .2, 1) both;
-}
-@keyframes passport-enter {
-  0%   { opacity: 0; transform: translateY(8px) scale(0.985); filter: blur(4px); }
-  100% { opacity: 1; transform: translateY(0)   scale(1);     filter: blur(0); }
+@keyframes entrance-veil {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .passport-enter > * { animation: none; }
+  .entrance-veil { animation: none; opacity: 0; }
 }
 
 /* ============== STAGE / BOOK ============== */

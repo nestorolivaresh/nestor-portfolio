@@ -32,16 +32,22 @@ export default function Passport() {
   const isMobile = useIsMobile()
   const [exp, setExp] = useState<Experience | null>(null)
   if (isMobile === null) return null
-  // Wrapper exists purely to host the entrance animation — content fades and
-  // settles in once we know which layout to show, instead of snapping in.
+  // The entrance fade is a fixed-position veil that sits on top and fades
+  // out — NOT an animation on the deck. Animating opacity on a parent of
+  // the deck forces the children onto a GPU compositing layer; with the
+  // deck's non-integer scale (e.g. 0.798 on a 375px viewport) the texture
+  // gets re-sampled and the result looks permanently blurred even after
+  // the animation ends. Veiling avoids that entirely — the deck never
+  // animates, the veil is a flat colored layer above it.
   return (
-    <div className="passport-enter">
+    <>
       {isMobile ? (
         <MobilePassport setExp={setExp} modalOpen={exp != null} />
       ) : (
         <DesktopPassport setExp={setExp} modalOpen={exp != null} />
       )}
       <Modal exp={exp} onClose={() => setExp(null)} />
-    </div>
+      <div className="entrance-veil" aria-hidden />
+    </>
   )
 }
