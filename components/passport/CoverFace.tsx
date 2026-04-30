@@ -3,8 +3,10 @@
 import { FONT_BEBAS, FONT_MONO } from './fonts'
 
 // The closed-cover face: navy leather, gold embossing, hexagonal seal
-// with four symmetric stars, and the prompt to open.
-export function CoverFace() {
+// with four symmetric stars, and the prompt to open. The prompt is
+// surface-aware so the cover reads "TAP" on touch devices and "CLICK"
+// on mouse-driven ones.
+export function CoverFace({ openPrompt = '▸ CLICK TO OPEN ◂' }: { openPrompt?: string }) {
   return (
     <div style={{ position: 'absolute', inset: 0, color: 'var(--gold)' }}>
       <svg
@@ -165,7 +167,7 @@ export function CoverFace() {
               color: 'var(--gold-bright)',
             }}
           >
-            ▸ CLICK TO OPEN ◂
+            {openPrompt}
           </div>
         </div>
       </div>

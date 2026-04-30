@@ -14,10 +14,9 @@ import {
 const MOBILE_PAGES_COUNT = 9 // 0 = cover, 1..8 = inner pages
 
 // On phones each page is shown one at a time. Swipe left/right (or tap the
-// nav) to turn the page. The flip animation is preserved as a horizontal
-// slide-and-rotate: the outgoing page rotates away while the incoming page
-// rotates in, so it still reads as a book page being turned, just one at a
-// time instead of as a two-page spread.
+// nav) to turn the page. The animation rotates the active page around its
+// left edge — like a book leaf hinged on the spine — so it still reads as
+// a page being turned, single-page-at-a-time.
 export function MobilePassport({
   setExp,
   modalOpen,
@@ -44,41 +43,117 @@ export function MobilePassport({
   }
   const activeSection = page === 0 ? 0 : page <= 2 ? 1 : page <= 4 ? 2 : page <= 6 ? 3 : 4
 
-  // Touch swipe — horizontal drag past a small threshold turns the page.
-  // The 1.5× horizontal-vs-vertical guard prevents vertical scrolls from
-  // accidentally paging.
-  const startX = useRef<number | null>(null)
-  const startY = useRef<number | null>(null)
-  const onTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX
-    startY.current = e.touches[0].clientY
-  }
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (startX.current == null || startY.current == null) return
-    const dx = e.changedTouches[0].clientX - startX.current
-    const dy = e.changedTouches[0].clientY - startY.current
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) next()
-      else prev()
+  // Use latest-callback refs so the native touch/pointer listeners attached
+  // once in useEffect always read the current page state without re-binding.
+  const nextRef = useRef(next)
+  const prevRef = useRef(prev)
+  const goToRef = useRef(goTo)
+  nextRef.current = next
+  prevRef.current = prev
+  goToRef.current = goTo
+
+  // Compute scale in JS — Safari rejects `scale(min(<length>, <length>))`
+  // because length-divided-by-number is still a length, and `scale()` only
+  // accepts <number>. Computing it here also keeps the deck centered when
+  // the iOS toolbar shows/hides.
+  const [scale, setScale] = useState(1)
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const s = Math.min((w - 24) / 440, (h - 110) / 620)
+      setScale(s > 0 ? s : 1)
     }
-    startX.current = null
-    startY.current = null
-  }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('orientationchange', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('orientationchange', update)
+    }
+  }, [])
+
+  // Native touch + pointer listeners attached imperatively. React synthetic
+  // touch events have intermittent issues on iOS Safari (especially when
+  // the target is a transformed element); native listeners with passive:
+  // true on a stable ref work reliably across Safari, Chrome and Firefox.
+  const passportRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = passportRef.current
+    if (!el) return
+
+    let startX: number | null = null
+    let startY: number | null = null
+    let usingPointer = false
+
+    const begin = (x: number, y: number) => {
+      startX = x
+      startY = y
+    }
+    const finish = (x: number, y: number) => {
+      if (startX == null || startY == null) return
+      const dx = x - startX
+      const dy = y - startY
+      startX = null
+      startY = null
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        if (dx < 0) nextRef.current()
+        else prevRef.current()
+      }
+    }
+
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!t) return
+      usingPointer = false
+      begin(t.clientX, t.clientY)
+    }
+    const onTouchEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0]
+      if (!t) return
+      finish(t.clientX, t.clientY)
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      // Skip if a touch sequence is already active to avoid double-firing.
+      if (e.pointerType === 'touch') return
+      usingPointer = true
+      begin(e.clientX, e.clientY)
+    }
+    const onPointerUp = (e: PointerEvent) => {
+      if (!usingPointer) return
+      finish(e.clientX, e.clientY)
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true })
+    el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointerup', onPointerUp)
+    el.addEventListener('pointercancel', onPointerUp)
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+      el.removeEventListener('pointerdown', onPointerDown)
+      el.removeEventListener('pointerup', onPointerUp)
+      el.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (modalOpen) return
-      if (e.key === 'ArrowRight') next()
-      else if (e.key === 'ArrowLeft') prev()
-      else if (e.key === 'Enter' && page === 0) goTo(1)
+      if (e.key === 'ArrowRight') nextRef.current()
+      else if (e.key === 'ArrowLeft') prevRef.current()
+      else if (e.key === 'Enter' && page === 0) goToRef.current(1)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, modalOpen])
 
   const pages: Array<{ kind: 'cover' | 'page'; el: React.ReactNode }> = [
-    { kind: 'cover', el: <CoverFace /> },
+    { kind: 'cover', el: <CoverFace openPrompt="▸ TAP TO OPEN ◂" /> },
     { kind: 'page', el: <PageIdentity /> },
     { kind: 'page', el: <PageWelcome /> },
     {
@@ -155,15 +230,25 @@ export function MobilePassport({
   ]
 
   return (
-    <div className="m-passport" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      <div className="m-deck" data-dir={dir}>
+    <div ref={passportRef} className="m-passport">
+      <div className="m-deck" data-dir={dir} style={{ transform: `scale(${scale})` }}>
         {pages.map((p, i) => {
           const offset = i - page
           const state = offset === 0 ? 'active' : offset < 0 ? 'past' : 'future'
+          // Z-index keeps the most-recently-flipped page above its older
+          // siblings (so backing up into it doesn't reveal pages from
+          // underneath), and keeps the rotating leaf above the page it's
+          // uncovering during a forward flip.
+          let z: number
+          if (offset < 0) z = 100 + i // past: newer-flipped on top
+          else if (offset === 0) z = 99 // active sits just below the latest past
+          else z = 99 - offset // future: closer-to-active on top
+
           return (
             <div
               key={i}
               className={`m-page m-page-${state}${p.kind === 'cover' ? ' m-cover' : ''}`}
+              style={{ zIndex: z }}
               onClick={p.kind === 'cover' && offset === 0 ? () => goTo(1) : undefined}
             >
               {p.el}
@@ -171,6 +256,10 @@ export function MobilePassport({
           )
         })}
       </div>
+
+      {page === 0 && (
+        <div className="m-swipe-hint">SWIPE OR TAP TO TURN THE PAGE</div>
+      )}
 
       {page > 0 && (
         <div className="m-nav">

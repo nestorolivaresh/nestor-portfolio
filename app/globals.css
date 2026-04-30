@@ -315,24 +315,34 @@ body::before {
 .m-passport {
   position: relative;
   width: 100%;
+  height: 100vh;
   height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
   overflow: hidden;
+  /* pan-y lets vertical scrolls/zooms through to the browser; horizontal
+     gestures are reserved for our page-turn handler. user-select off so
+     swipes don't accidentally start a text selection on Safari. */
   touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .m-deck {
   position: relative;
   width: var(--PAGE_W);
   height: var(--PAGE_H);
-  /* Scale the natural 440×620 page to fit the phone viewport, preserving
-     readable proportions of the original design. */
-  transform: scale(min((100vw - 24px) / 440, (100dvh - 110px) / 620));
+  /* Scale is applied inline from JS — keeps the natural 440×620 design and
+     fits it to the phone viewport reliably across browsers (Safari rejects
+     `scale(min((100vw-24px)/440, ...))` because length-divided-by-number
+     is still a length). */
+  flex: 0 0 auto;
   transform-origin: center;
-  perspective: 1500px;
+  perspective: 1600px;
   perspective-origin: 50% 50%;
+  touch-action: pan-y;
 }
 .m-page {
   position: absolute;
@@ -341,16 +351,20 @@ body::before {
   overflow: hidden;
   box-shadow: 0 14px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.35);
   background: var(--paper);
-  transform-origin: center;
-  transition:
-    transform 0.6s cubic-bezier(.65, 0, .35, 1),
-    opacity 0.45s ease;
-  will-change: transform, opacity;
+  /* Hinge each leaf on its left edge so it turns like a real book page. */
+  transform-origin: left center;
+  transition: transform 0.85s cubic-bezier(.65, 0, .35, 1);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  touch-action: pan-y;
 }
-.m-page-active { transform: translateX(0)        rotateY(0deg);   opacity: 1; z-index: 3; }
-.m-page-past   { transform: translateX(-65%)     rotateY(28deg);  opacity: 0; z-index: 1; pointer-events: none; }
-.m-page-future { transform: translateX(65%)      rotateY(-28deg); opacity: 0; z-index: 2; pointer-events: none; }
+.m-page-active { transform: rotateY(0deg); }
+/* Past pages are flipped over to the left of the spine — they rotate from
+   0 → -180deg around the left edge, so the leaving page swings off-screen
+   to the left while the next page is uncovered underneath. */
+.m-page-past   { transform: rotateY(-180deg); pointer-events: none; }
+.m-page-future { transform: rotateY(0deg); pointer-events: none; }
 .m-cover.m-page-active {
   background:
     radial-gradient(ellipse at 50% 40%, #2a4778 0%, #1a2e54 35%, #0d1f3c 75%, #07142a 100%);
@@ -360,6 +374,33 @@ body::before {
     inset 0 0 80px rgba(7, 14, 30, 0.6);
 }
 .m-cover { cursor: pointer; }
+/* Soft hint shown only on the cover so first-time mobile visitors know
+   the gesture vocabulary. */
+.m-swipe-hint {
+  position: fixed;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: 50%;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(230, 201, 138, 0.75);
+  background: rgba(13, 31, 60, 0.55);
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(200, 168, 104, 0.25);
+  z-index: 100;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: calc(100vw - 16px);
+  /* Centering is done via a translateX inside the keyframes so the
+     pulse animation doesn't clobber it (animation transform replaces
+     any base transform on the element). */
+  animation: pulse-hint 2.4s ease-in-out infinite;
+}
+@keyframes pulse-hint {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, 0); }
+  50%      { opacity: 1;   transform: translate(-50%, -2px); }
+}
 .m-nav {
   position: fixed;
   bottom: max(14px, env(safe-area-inset-bottom));
