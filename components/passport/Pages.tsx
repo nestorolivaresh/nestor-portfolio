@@ -309,11 +309,11 @@ export function PageWelcome() {
               textAlign: 'justify',
             }}
           >
-            Six years aloft over modern web, flown on the strict wings of <em>TypeScript</em> — from the
+            Six years aloft over modern web, flown on the strict wings of <em>TypeScript</em>... from the
             frontend cities of <em>React</em> &amp; <em>Next.js</em>, through the financial districts of{' '}
             <em>Web3</em>, down into the backend interiors of <em>Node</em>, <em>PostgreSQL</em> &amp;{' '}
-            <em>MongoDB</em>. Comfortable on every leg of the journey — from the polished cabin
-            (<em>design</em>, <em>UX/UI</em>, the details that breathe) to the engine room and the control
+            <em>MongoDB</em>. Comfortable on every leg of the journey, taking over the polished cabin
+            (<em>design</em>, <em>UX/UI</em>, the details that breathe) as well as the engine room and the control
             tower (<em>architecture</em>, <em>APIs</em>, end-to-end systems).
           </div>
 
